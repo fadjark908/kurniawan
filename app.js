@@ -1,10 +1,9 @@
 /**
- * DompetKu — Application Core Logic
- * Handles State, LocalStorage, UI Rendering, Charts, and Validation.
+ * DompetKu — Application Core Logic (Updated with Login Validation & Account Recovery)
  */
 
-// Application State
 let appData = {
+    user: null, // { username, identifier, password }
     saldoAwal: 0,
     saldoAwalNote: '',
     budgetLimit: 0,
@@ -14,13 +13,13 @@ let appData = {
 
 let financeChartInstance = null;
 
-// DOMContentLoaded Initialization
 document.addEventListener('DOMContentLoaded', () => {
     loadData();
+    initAuthUI();
     initTheme();
     setupNavigation();
     setupEventListeners();
-    updateUI();
+    setupAiChatbot();
     setDefaultDates();
 });
 
@@ -54,10 +53,163 @@ function formatRupiah(number) {
 function setDefaultDates() {
     const today = new Date().toISOString().split('T')[0];
     const pDate = document.getElementById('pemasukanTanggal');
-    const eDate = document.getElementById('pengeluaranForm');
     if (pDate) pDate.value = today;
     const expDate = document.getElementById('pengeluaranTanggal');
     if (expDate) expDate.value = today;
+}
+
+// Auth UI Initialization
+function initAuthUI() {
+    const authOverlay = document.getElementById('authOverlay');
+    const appContainer = document.getElementById('appContainer');
+
+    const registerContainer = document.getElementById('registerContainer');
+    const loginContainer = document.getElementById('loginContainer');
+    const forgotContainer = document.getElementById('forgotContainer');
+
+    const loginErrorAlert = document.getElementById('loginErrorAlert');
+    const loginErrorText = document.getElementById('loginErrorText');
+
+    // Toggle views
+    document.getElementById('showLoginBtn').addEventListener('click', (e) => {
+        e.preventDefault();
+        registerContainer.classList.add('hidden');
+        forgotContainer.classList.add('hidden');
+        loginContainer.classList.remove('hidden');
+        loginErrorAlert.classList.add('hidden');
+    });
+
+    document.getElementById('showRegisterBtn').addEventListener('click', (e) => {
+        e.preventDefault();
+        loginContainer.classList.add('hidden');
+        forgotContainer.classList.add('hidden');
+        registerContainer.classList.remove('hidden');
+    });
+
+    document.getElementById('showForgotBtn').addEventListener('click', (e) => {
+        e.preventDefault();
+        loginContainer.classList.add('hidden');
+        registerContainer.classList.add('hidden');
+        forgotContainer.classList.remove('hidden');
+        document.getElementById('forgotResultBox').classList.add('hidden');
+    });
+
+    document.getElementById('backToLoginBtn').addEventListener('click', (e) => {
+        e.preventDefault();
+        forgotContainer.classList.add('hidden');
+        registerContainer.classList.add('hidden');
+        loginContainer.classList.remove('hidden');
+        loginErrorAlert.classList.add('hidden');
+    });
+
+    const backAfterRec = document.getElementById('backToLoginAfterRecover');
+    if (backAfterRec) {
+        backAfterRec.addEventListener('click', () => {
+            forgotContainer.classList.add('hidden');
+            loginContainer.classList.remove('hidden');
+            loginErrorAlert.classList.add('hidden');
+        });
+    }
+
+    // Register Form Submit
+    document.getElementById('registerForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const username = document.getElementById('regUsername').value.trim();
+        const identifier = document.getElementById('regIdentifier').value.trim();
+        const password = document.getElementById('regPassword').value;
+
+        if (password.length < 6) {
+            showToast('Password minimal 6 karakter!', 'error');
+            return;
+        }
+
+        appData.user = { username, identifier, password };
+        saveData();
+        showToast('Akun berhasil dibuat! Silakan masuk.');
+        registerContainer.classList.add('hidden');
+        loginContainer.classList.remove('hidden');
+        loginErrorAlert.classList.add('hidden');
+    });
+
+    // Login Form Submit (Strict Validation: Block submit/access if wrong)
+    document.getElementById('loginForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const inputId = document.getElementById('loginIdentifier').value.trim();
+        const inputPass = document.getElementById('loginPassword').value;
+
+        if (!appData.user) {
+            loginErrorText.textContent = 'Belum ada akun terdaftar! Silakan buat akun baru terlebih dahulu.';
+            loginErrorAlert.classList.remove('hidden');
+            showToast('Akun belum terdaftar!', 'error');
+            return;
+        }
+
+        const isMatchUser = (appData.user.username === inputId) || (appData.user.identifier === inputId);
+        const isMatchPass = (appData.user.password === inputPass);
+
+        if (!isMatchUser && !isMatchPass) {
+            loginErrorText.textContent = 'Username/Gmail/No. Telp DAN Password salah!';
+            loginErrorAlert.classList.remove('hidden');
+            showToast('Username & Password salah!', 'error');
+        } else if (!isMatchUser) {
+            loginErrorText.textContent = 'Username, Gmail, atau No. Telepon tidak ditemukan!';
+            loginErrorAlert.classList.remove('hidden');
+            showToast('Username / No. Telp / Gmail salah!', 'error');
+        } else if (!isMatchPass) {
+            loginErrorText.textContent = 'Password yang Anda masukkan salah!';
+            loginErrorAlert.classList.remove('hidden');
+            showToast('Password salah!', 'error');
+        } else {
+            // Login Successful
+            loginErrorAlert.classList.add('hidden');
+            showToast(`Selamat datang kembali, ${appData.user.username}!`);
+            authOverlay.classList.add('hidden');
+            appContainer.classList.remove('hidden');
+            updateUI();
+        }
+    });
+
+    // Forgot / Recovery Form Submit
+    document.getElementById('forgotForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const inputIdent = document.getElementById('forgotIdentifier').value.trim();
+
+        if (!appData.user) {
+            showToast('Belum ada akun yang terdaftar di sistem!', 'error');
+            return;
+        }
+
+        const match = (appData.user.identifier === inputIdent) || (appData.user.username === inputIdent);
+
+        if (match) {
+            document.getElementById('recUsernameText').textContent = appData.user.username;
+            document.getElementById('recPasswordText').textContent = appData.user.password;
+            document.getElementById('forgotResultBox').classList.remove('hidden');
+            showToast('Akun Anda berhasil ditemukan!');
+        } else {
+            document.getElementById('forgotResultBox').classList.add('hidden');
+            showToast('Gmail / No. Telp tidak cocok dengan akun terdaftar!', 'error');
+        }
+    });
+
+    // Logout
+    const logoutBtn = document.getElementById('logoutSidebarBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+            if (confirm('Apakah Anda ingin keluar dari sesi ini?')) {
+                authOverlay.classList.remove('hidden');
+                appContainer.classList.add('hidden');
+                document.getElementById('loginIdentifier').value = '';
+                document.getElementById('loginPassword').value = '';
+                loginErrorAlert.classList.add('hidden');
+            }
+        });
+    }
+
+    if (appData.user) {
+        registerContainer.classList.add('hidden');
+        loginContainer.classList.remove('hidden');
+    }
 }
 
 // Navigation Logic
@@ -68,8 +220,6 @@ function setupNavigation() {
             e.preventDefault();
             const targetId = item.getAttribute('data-target');
             switchView(targetId);
-
-            // Close mobile sidebar if open
             document.getElementById('sidebar').classList.remove('show');
         });
     });
@@ -83,7 +233,6 @@ function setupNavigation() {
 }
 
 function switchView(viewId) {
-    // Nav active state
     document.querySelectorAll('.sidebar-nav li').forEach(li => {
         if (li.getAttribute('data-target') === viewId) {
             li.classList.add('active');
@@ -92,11 +241,9 @@ function switchView(viewId) {
         }
     });
 
-    // View sections
     document.querySelectorAll('.view-section').forEach(sec => {
         if (sec.id === viewId) {
             sec.classList.add('active');
-            // Update page header title
             const titleMap = {
                 'dashboard-view': 'Dashboard',
                 'saldo-awal-view': 'Pengaturan Saldo Awal',
@@ -104,8 +251,9 @@ function switchView(viewId) {
                 'pengeluaran-view': 'Catat Pengeluaran',
                 'riwayat-view': 'Riwayat Transaksi',
                 'anggaran-view': 'Anggaran Bulanan',
+                'saran-view': 'Saran & Target',
                 'laporan-view': 'Laporan Keuangan',
-                'pengaturan-view': 'Pengaturan Aplikasi'
+                'profil-view': 'Profil & Pengaturan'
             };
             document.getElementById('pageTitle').textContent = titleMap[viewId] || 'DompetKu';
         } else {
@@ -148,7 +296,6 @@ function setTheme(theme) {
     appData.theme = theme;
     document.documentElement.setAttribute('data-theme', theme);
     saveData();
-    // Re-render chart with proper colors if needed
     updateChart();
 }
 
@@ -269,6 +416,28 @@ function setupEventListeners() {
         });
     }
 
+    // Update Profile Form
+    const updateProfileForm = document.getElementById('updateProfileForm');
+    if (updateProfileForm) {
+        updateProfileForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const newUsername = document.getElementById('updateUsername').value.trim();
+            const newIdentifier = document.getElementById('updateIdentifier').value.trim();
+            const newPass = document.getElementById('updatePassword').value;
+
+            if (appData.user) {
+                appData.user.username = newUsername;
+                appData.user.identifier = newIdentifier;
+                if (newPass.length >= 6) {
+                    appData.user.password = newPass;
+                }
+                saveData();
+                updateUI();
+                showToast('Profil berhasil diperbarui!');
+            }
+        });
+    }
+
     // Export CSV
     const exportCsvBtn = document.getElementById('exportCsvBtn');
     if (exportCsvBtn) {
@@ -279,17 +448,13 @@ function setupEventListeners() {
     const resetDataBtn = document.getElementById('resetDataBtn');
     if (resetDataBtn) {
         resetDataBtn.addEventListener('click', () => {
-            if (confirm('Apakah Anda yakin ingin menghapus seluruh data DompetKu? Tindakan ini tidak dapat dibatalkan.')) {
-                localStorage.removeItem('dompetku_data');
-                appData = {
-                    saldoAwal: 0,
-                    saldoAwalNote: '',
-                    budgetLimit: 0,
-                    transactions: [],
-                    theme: appData.theme
-                };
+            if (confirm('Apakah Anda yakin ingin menghapus seluruh data transaksi DompetKu?')) {
+                appData.transactions = [];
+                appData.saldoAwal = 0;
+                appData.budgetLimit = 0;
+                saveData();
                 updateUI();
-                showToast('Seluruh data berhasil dihapus.');
+                showToast('Seluruh data transaksi berhasil direset.');
             }
         });
     }
@@ -337,18 +502,19 @@ function setupEventListeners() {
 }
 
 // Master Update UI Function
+let totalPemasukanGlobal = 0;
+let totalPengeluaranGlobal = 0;
+let totalSaldoGlobal = 0;
+
 function updateUI() {
     calculateFinancials();
     renderDashboard();
     renderRiwayat();
     updateBudgetSection();
+    renderSaranSection();
     renderLaporan();
+    renderProfileSection();
 }
-
-// Financial Calculations
-let totalPemasukanGlobal = 0;
-let totalPengeluaranGlobal = 0;
-let totalSaldoGlobal = 0;
 
 function calculateFinancials() {
     totalPemasukanGlobal = appData.transactions
@@ -359,24 +525,25 @@ function calculateFinancials() {
         .filter(t => t.jenis === 'pengeluaran')
         .reduce((acc, curr) => acc + curr.jumlah, 0);
 
-    // Formula: Saldo Saat Ini = Saldo Awal + Total Pemasukan - Total Pengeluaran
     totalSaldoGlobal = appData.saldoAwal + totalPemasukanGlobal - totalPengeluaranGlobal;
 }
 
 // Render Dashboard
 function renderDashboard() {
+    const uname = appData.user ? appData.user.username : 'Pengguna';
+    document.getElementById('bannerUsername').textContent = uname;
+    document.getElementById('greetingText').textContent = `Halo, ${uname}`;
+
     document.getElementById('dashTotalSaldo').textContent = formatRupiah(totalSaldoGlobal);
     document.getElementById('dashSaldoAwal').textContent = formatRupiah(appData.saldoAwal);
     document.getElementById('dashTotalPemasukan').textContent = formatRupiah(totalPemasukanGlobal);
     document.getElementById('dashTotalPengeluaran').textContent = formatRupiah(totalPengeluaranGlobal);
 
-    // Pre-fill saldo awal input if exists
     const initInput = document.getElementById('initialBalanceInput');
     const initNote = document.getElementById('initialBalanceNote');
     if (initInput && appData.saldoAwal > 0) initInput.value = appData.saldoAwal;
     if (initNote && appData.saldoAwalNote) initNote.value = appData.saldoAwalNote;
 
-    // Recent Transactions Table (Top 5)
     const recentBody = document.getElementById('dashRecentBody');
     const emptyState = document.getElementById('dashEmptyState');
     recentBody.innerHTML = '';
@@ -408,14 +575,17 @@ function renderDashboard() {
     updateChart();
 }
 
-// Render Chart
+// Render Chart with percentage breakdown
 function updateChart() {
     const ctx = document.getElementById('financeChart');
     if (!ctx) return;
 
-    // Calculate monthly breakdown or total comparison
     const isDark = appData.theme === 'dark';
     const textColor = isDark ? '#94a3b8' : '#64748b';
+
+    const base = appData.saldoAwal + totalPemasukanGlobal;
+    let expensePct = base > 0 ? Math.round((totalPengeluaranGlobal / base) * 100) : 0;
+    document.getElementById('chartPercentageBadge').textContent = `${expensePct}% Pengeluaran dari Dana`;
 
     if (financeChartInstance) {
         financeChartInstance.destroy();
@@ -424,7 +594,7 @@ function updateChart() {
     financeChartInstance = new Chart(ctx, {
         type: 'doughnut',
         data: {
-            labels: ['Saldo Awal', 'Pemasukan', 'Pengeluaran'],
+            labels: ['Saldo Awal', 'Total Pemasukan', 'Total Pengeluaran'],
             datasets: [{
                 data: [appData.saldoAwal, totalPemasukanGlobal, totalPengeluaranGlobal],
                 backgroundColor: ['#2563eb', '#10b981', '#ef4444'],
@@ -448,6 +618,54 @@ function updateChart() {
     });
 }
 
+// Render Saran & Target Section based on Initial Balance
+function renderSaranSection() {
+    const saldoAcuan = appData.saldoAwal;
+    document.getElementById('saranTotalSaldo').textContent = formatRupiah(saldoAcuan);
+
+    // 5 Hari
+    const d5Total = saldoAcuan;
+    const d5Harian = saldoAcuan > 0 ? Math.round(saldoAcuan / 5) : 0;
+    document.getElementById('saran5HariTotal').textContent = formatRupiah(d5Total);
+    document.getElementById('saran5HariHarian').textContent = `${formatRupiah(d5Harian)} / hari`;
+
+    // 1 Minggu (7 Hari)
+    const mingguTotal = saldoAcuan;
+    const mingguHarian = saldoAcuan > 0 ? Math.round(saldoAcuan / 7) : 0;
+    document.getElementById('saranMingguTotal').textContent = formatRupiah(mingguTotal);
+    document.getElementById('saranMingguHarian').textContent = `${formatRupiah(mingguHarian)} / hari`;
+
+    // 2 Minggu (14 Hari)
+    const d14Total = saldoAcuan;
+    const d14Harian = saldoAcuan > 0 ? Math.round(saldoAcuan / 14) : 0;
+    document.getElementById('saran2MingguTotal').textContent = formatRupiah(d14Total);
+    document.getElementById('saran2MingguHarian').textContent = `${formatRupiah(d14Harian)} / hari`;
+
+    // 3 Minggu (21 Hari)
+    const d21Total = saldoAcuan;
+    const d21Harian = saldoAcuan > 0 ? Math.round(saldoAcuan / 21) : 0;
+    document.getElementById('saran3MingguTotal').textContent = formatRupiah(d21Total);
+    document.getElementById('saran3MingguHarian').textContent = `${formatRupiah(d21Harian)} / hari`;
+
+    // 1 Bulan (30 Hari)
+    const bulanTotal = saldoAcuan;
+    const bulanHarian = saldoAcuan > 0 ? Math.round(saldoAcuan / 30) : 0;
+    document.getElementById('saranBulanTotal').textContent = formatRupiah(bulanTotal);
+    document.getElementById('saranBulanHarian').textContent = `${formatRupiah(bulanHarian)} / hari`;
+}
+
+// Render Profile Section
+function renderProfileSection() {
+    if (!appData.user) return;
+    document.getElementById('profileUsernameDisplay').textContent = appData.user.username;
+    document.getElementById('profileIdentifierDisplay').textContent = appData.user.identifier;
+
+    const uInput = document.getElementById('updateUsername');
+    const iInput = document.getElementById('updateIdentifier');
+    if (uInput && !uInput.value) uInput.value = appData.user.username;
+    if (iInput && !iInput.value) iInput.value = appData.user.identifier;
+}
+
 // Render Riwayat Transaksi
 function renderRiwayat() {
     const tbody = document.getElementById('riwayatBody');
@@ -464,7 +682,6 @@ function renderRiwayat() {
         return matchSearch && matchType;
     });
 
-    // Sorting
     filtered.sort((a, b) => {
         if (sortVal === 'newest') return new Date(b.tanggal) - new Date(a.tanggal);
         if (sortVal === 'oldest') return new Date(a.tanggal) - new Date(b.tanggal);
@@ -510,7 +727,6 @@ function renderRiwayat() {
     }
 }
 
-// Delete Transaction
 function deleteTransaction(id) {
     if (confirm('Apakah Anda yakin ingin menghapus transaksi ini?')) {
         appData.transactions = appData.transactions.filter(t => t.id !== id);
@@ -520,7 +736,6 @@ function deleteTransaction(id) {
     }
 }
 
-// Open Edit Modal
 function openEditModal(id) {
     const tx = appData.transactions.find(t => t.id === id);
     if (!tx) return;
@@ -539,17 +754,16 @@ function closeModal() {
     document.getElementById('editModal').classList.remove('show');
 }
 
-// Budget Section Update
+// Budget Section
 function updateBudgetSection() {
     const limitInput = document.getElementById('budgetLimitInput');
     if (limitInput) limitInput.value = appData.budgetLimit || '';
 
-    const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
+    const currentMonth = new Date().toISOString().slice(0, 7);
     const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
     const now = new Date();
     document.getElementById('currentMonthName').textContent = `${monthNames[now.getMonth()]} ${now.getFullYear()}`;
 
-    // Filter current month expenses
     const currentMonthExpenses = appData.transactions
         .filter(t => t.jenis === 'pengeluaran' && t.tanggal.startsWith(currentMonth))
         .reduce((acc, curr) => acc + curr.jumlah, 0);
@@ -566,7 +780,6 @@ function updateBudgetSection() {
     const progressBar = document.getElementById('budgetProgressBar');
     progressBar.style.width = `${percentage}%`;
 
-    // Progress bar color & warning alert
     const alertBox = document.getElementById('budgetAlert');
     const alertText = document.getElementById('budgetAlertText');
 
@@ -591,7 +804,7 @@ function updateBudgetSection() {
     }
 }
 
-// Render Laporan
+// Laporan View
 function renderLaporan() {
     document.getElementById('repSaldoAwal').textContent = formatRupiah(appData.saldoAwal);
     document.getElementById('repPemasukan').textContent = formatRupiah(totalPemasukanGlobal);
@@ -599,7 +812,7 @@ function renderLaporan() {
     document.getElementById('repSaldoAkhir').textContent = formatRupiah(totalSaldoGlobal);
 }
 
-// Export to CSV
+// Export CSV
 function exportToCSV() {
     if (appData.transactions.length === 0) {
         showToast('Tidak ada data transaksi untuk diekspor!', 'error');
@@ -624,7 +837,73 @@ function exportToCSV() {
     showToast('Laporan berhasil diekspor ke CSV!');
 }
 
-// Toast Notification Helper
+// AI Assistant Chatbot Logic
+function setupAiChatbot() {
+    const fab = document.getElementById('aiFabBtn');
+    const box = document.getElementById('aiChatBox');
+    const closeBtn = document.getElementById('aiCloseBtn');
+    const sendBtn = document.getElementById('aiSendBtn');
+    const inputTxt = document.getElementById('aiInputText');
+
+    fab.addEventListener('click', () => {
+        box.classList.toggle('hidden');
+    });
+
+    closeBtn.addEventListener('click', () => {
+        box.classList.add('hidden');
+    });
+
+    const handleSend = () => {
+        const q = inputTxt.value.trim();
+        if (!q) return;
+
+        appendAiMessage(q, 'user');
+        inputTxt.value = '';
+
+        setTimeout(() => {
+            const ans = getAiResponse(q);
+            appendAiMessage(ans, 'bot');
+        }, 500);
+    };
+
+    sendBtn.addEventListener('click', handleSend);
+    inputTxt.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') handleSend();
+    });
+}
+
+function appendAiMessage(text, sender) {
+    const chatBody = document.getElementById('aiChatBody');
+    const div = document.createElement('div');
+    div.className = `ai-message ${sender}`;
+    div.textContent = text;
+    chatBody.appendChild(div);
+    chatBody.scrollTop = chatBody.scrollHeight;
+}
+
+function getAiResponse(question) {
+    const q = question.toLowerCase();
+    const uname = appData.user ? appData.user.username : 'pengguna';
+
+    if (q.includes('halo') || q.includes('hai')) {
+        return `Halo ${uname}! Ada yang bisa saya bantu terkait pencatatan keuangan atau fitur DompetKu?`;
+    } else if (q.includes('saldo awal') || q.includes('modal')) {
+        return `Saldo awal adalah modal awal Anda sebelum mencatat transaksi. Anda dapat mengaturnya di menu "Saldo Awal". Saldo Anda saat ini adalah ${formatRupiah(totalSaldoGlobal)}.`;
+    } else if (q.includes('saran') || q.includes('target') || q.includes('harian')) {
+        const harian = appData.saldoAwal > 0 ? formatRupiah(Math.round(appData.saldoAwal / 7)) : 'Rp0';
+        return `Berdasarkan saldo acuan Anda, saran alokasi untuk 7 hari ke depan adalah sekitar ${harian} per hari. Cek menu "Saran & Tips" untuk detail lengkapnya!`;
+    } else if (q.includes('lupa') || q.includes('password') || q.includes('akun')) {
+        return `Jika Anda lupa password atau username, klik opsi "Lupa Password / Username?" pada halaman Login untuk memulihkan kredensial akun Anda.`;
+    } else if (q.includes('ekspor') || q.includes('excel') || q.includes('csv')) {
+        return `Anda dapat mengunduh laporan dalam format CSV yang kompatibel dengan Excel melalui menu "Laporan Keuangan" dengan menekan tombol "Ekspor ke CSV".`;
+    } else if (q.includes('kegunaan') || q.includes('aplikasi ini') || q.includes('apa itu dompetku')) {
+        return `DompetKu adalah aplikasi pencatatan keuangan pribadi modern untuk memantau pemasukan, pengeluaran, saldo, anggaran bulanan, serta memberikan saran keuangan cerdas secara offline di browser Anda.`;
+    } else {
+        return `Pertanyaan bagus! Untuk mengelola keuangan dengan baik di DompetKu, pastikan Anda rutin mencatat setiap pemasukan dan pengeluaran serta memantau grafik persentase di Dashboard. Ada hal lain yang ingin ditanyakan?`;
+    }
+}
+
+// Toast Notification
 function showToast(message, type = 'success') {
     const toast = document.getElementById('toastNotification');
     const toastMsg = document.getElementById('toastMessage');

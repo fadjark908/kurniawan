@@ -12,9 +12,103 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Custom CSS -->
     <link rel="stylesheet" href="style.css">
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="DompetKu">
+
 </head>
 <body>
-    <div class="app-container">
+    <!-- AUTHENTICATION OVERLAY (Register, Login, Lupa Akses) -->
+    <div id="authOverlay" class="auth-overlay">
+        <div class="auth-card">
+            <div class="auth-logo">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-wallet"></i>
+                    <i class="fa-solid fa-coins coin-overlay"></i>
+                </div>
+                <h2>Dompet<span>Ku</span></h2>
+            </div>
+
+            <!-- REGISTER FORM -->
+            <div id="registerContainer" class="auth-form-container">
+                <h3>Buat Akun Baru</h3>
+                <p>Mulai kelola keuangan pribadi Anda dengan mudah.</p>
+                <form id="registerForm">
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" id="regUsername" placeholder="Contoh: budi_santoso" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Nomor Telepon / Gmail</label>
+                        <input type="text" id="regIdentifier" placeholder="08123456789 atau email@gmail.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="regPassword" placeholder="Minimal 6 karakter" required>
+                    </div>
+                    <button type="submit" class="btn-primary btn-block">Daftar Akun</button>
+                </form>
+                <div class="auth-switch">
+                    <span>Sudah punya akun? <a href="#" id="showLoginBtn">Masuk di sini</a></span>
+                </div>
+            </div>
+
+            <!-- LOGIN FORM -->
+            <div id="loginContainer" class="auth-form-container hidden">
+                <h3>Masuk ke DompetKu</h3>
+                <p>Masukkan akun yang telah terdaftar.</p>
+                <div id="loginErrorAlert" class="auth-error-msg hidden">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <span id="loginErrorText">Username atau Password salah!</span>
+                </div>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label>Username, No. Telepon, atau Gmail</label>
+                        <input type="text" id="loginIdentifier" placeholder="Username / No. Telp / Gmail" required>
+                    </div>
+                    <div class="form-group">
+                        <div class="label-flex">
+                            <label>Password</label>
+                            <a href="#" id="showForgotBtn" class="forgot-link">Lupa Password / Username?</a>
+                        </div>
+                        <input type="password" id="loginPassword" placeholder="Password Anda" required>
+                    </div>
+                    <button type="submit" class="btn-primary btn-block">Masuk</button>
+                </form>
+                <div class="auth-switch">
+                    <span>Belum punya akun? <a href="#" id="showRegisterBtn">Buat Akun Baru</a></span>
+                </div>
+            </div>
+
+            <!-- FORGOT / RECOVERY FORM (Lupa Username / Password) -->
+            <div id="forgotContainer" class="auth-form-container hidden">
+                <h3>Pemulihan Akun</h3>
+                <p>Masukkan Gmail atau No. Telepon terdaftar untuk memulihkan akun Anda.</p>
+                <form id="forgotForm">
+                    <div class="form-group">
+                        <label>Gmail atau No. Telepon Terdaftar</label>
+                        <input type="text" id="forgotIdentifier" placeholder="Email / No. Telp Anda" required>
+                    </div>
+                    <button type="submit" class="btn-primary btn-block">Cari & Pulihkan Akun</button>
+                </form>
+                <div id="forgotResultBox" class="forgot-result-box hidden">
+                    <h4><i class="fa-solid fa-circle-check"></i> Akun Ditemukan!</h4>
+                    <p><strong>Username:</strong> <span id="recUsernameText">-</span></p>
+                    <p><strong>Password Saat Ini:</strong> <span id="recPasswordText">-</span></p>
+                    <button class="btn-primary btn-block" id="backToLoginAfterRecover" style="margin-top: 12px;">Masuk Sekarang</button>
+                </div>
+                <div class="auth-switch" style="margin-top: 16px;">
+                    <span>Kembali ke <a href="#" id="backToLoginBtn">Halaman Login</a></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APP CONTAINER -->
+    <div class="app-container" id="appContainer">
         <!-- Sidebar Navigation (Desktop) -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
@@ -34,8 +128,9 @@
                     <li data-target="pengeluaran-view"><a href="#"><i class="fa-solid fa-circle-arrow-up"></i><span>Pengeluaran</span></a></li>
                     <li data-target="riwayat-view"><a href="#"><i class="fa-solid fa-clock-rotate-left"></i><span>Riwayat</span></a></li>
                     <li data-target="anggaran-view"><a href="#"><i class="fa-solid fa-bullseye"></i><span>Anggaran</span></a></li>
+                    <li data-target="saran-view"><a href="#"><i class="fa-solid fa-lightbulb"></i><span>Saran & Tips</span></a></li>
                     <li data-target="laporan-view"><a href="#"><i class="fa-solid fa-chart-pie"></i><span>Laporan</span></a></li>
-                    <li data-target="pengaturan-view"><a href="#"><i class="fa-solid fa-gear"></i><span>Pengaturan</span></a></li>
+                    <li data-target="profil-view"><a href="#"><i class="fa-solid fa-user-gear"></i><span>Profil & Pengaturan</span></a></li>
                 </ul>
             </nav>
             <div class="sidebar-footer">
@@ -47,6 +142,9 @@
                         <span class="slider round"></span>
                     </label>
                 </div>
+                <button class="btn-logout" id="logoutSidebarBtn">
+                    <i class="fa-solid fa-right-from-bracket"></i> Keluar
+                </button>
             </div>
         </aside>
 
@@ -61,9 +159,9 @@
                     <h1 id="pageTitle">Dashboard</h1>
                 </div>
                 <div class="header-right">
-                    <div class="user-greeting">
+                    <div class="user-greeting" onclick="switchView('profil-view')" style="cursor: pointer;" title="Buka Profil">
                         <span id="greetingText">Halo, Pengguna</span>
-                        <div class="avatar"><i class="fa-solid fa-user"></i></div>
+                        <div class="avatar" id="headerAvatar"><i class="fa-solid fa-user"></i></div>
                     </div>
                 </div>
             </header>
@@ -71,12 +169,13 @@
             <!-- Scrollable Content Area -->
             <div class="content-body">
                 
+                
                 <!-- 1. DASHBOARD VIEW -->
                 <section id="dashboard-view" class="view-section active">
                     <!-- Welcome Banner -->
                     <div class="welcome-banner">
                         <div class="banner-text">
-                            <h2>Selamat Datang di DompetKu! 👋</h2>
+                            <h2>Selamat Datang, <span id="bannerUsername">Pengguna</span>! 👋</h2>
                             <p>Kelola keuangan pribadi dengan lebih mudah, terstruktur, dan transparan.</p>
                         </div>
                         <div class="banner-action">
@@ -125,8 +224,8 @@
                         <button class="quick-btn" onclick="switchView('pengeluaran-view')">
                             <i class="fa-solid fa-circle-arrow-up"></i> Catat Pengeluaran
                         </button>
-                        <button class="quick-btn" onclick="switchView('anggaran-view')">
-                            <i class="fa-solid fa-bullseye"></i> Cek Anggaran
+                        <button class="quick-btn" onclick="switchView('saran-view')">
+                            <i class="fa-solid fa-lightbulb"></i> Lihat Saran & Target
                         </button>
                     </div>
 
@@ -134,8 +233,8 @@
                     <div class="dashboard-grid">
                         <div class="card chart-container-card">
                             <div class="card-header">
-                                <h3>Grafik Keuangan</h3>
-                                <span class="badge">Bulan Ini</span>
+                                <h3>Grafik Proporsi Keuangan</h3>
+                                <span class="badge" id="chartPercentageBadge">0% Pengeluaran</span>
                             </div>
                             <div class="chart-wrapper">
                                 <canvas id="financeChart"></canvas>
@@ -182,13 +281,13 @@
                                 <label for="initialBalanceInput">Jumlah Saldo Awal (Rp)</label>
                                 <div class="input-prefix">
                                     <span>Rp</span>
-                                    <input type="number" id="initialBalanceInput" min="0" placeholder="Contoh: 500000" required>
+                                    <input type="number" id="initialBalanceInput" min="0" placeholder="Contoh: 300000" required>
                                 </div>
-                                <small class="form-hint">Saldo awal tidak dihitung sebagai pemasukan, namun langsung ditambahkan ke total saldo Anda.</small>
+                                <small class="form-hint">Saldo awal mendasari perhitungan saran keuangan dan target harian Anda.</small>
                             </div>
                             <div class="form-group">
                                 <label for="initialBalanceNote">Catatan / Keterangan (Opsional)</label>
-                                <input type="text" id="initialBalanceNote" placeholder="Contoh: Tabungan dompet & rekening bank">
+                                <input type="text" id="initialBalanceNote" placeholder="Contoh: Dompet & tabungan minggu ini">
                             </div>
                             <button type="submit" class="btn-primary btn-block">Simpan Saldo Awal</button>
                         </form>
@@ -284,7 +383,6 @@
                         <p>Daftar seluruh transaksi pemasukan dan pengeluaran.</p>
                     </div>
                     <div class="card">
-                        <!-- Filters & Search Toolbar -->
                         <div class="toolbar">
                             <div class="search-box">
                                 <i class="fa-solid fa-magnifying-glass"></i>
@@ -305,7 +403,6 @@
                             </div>
                         </div>
 
-                        <!-- Table -->
                         <div class="table-responsive">
                             <table class="data-table" id="riwayatTable">
                                 <thead>
@@ -374,7 +471,68 @@
                     </div>
                 </section>
 
-                <!-- 7. LAPORAN VIEW -->
+                <!-- 7. SARAN & TARGET HARIAN/MINGGUAN -->
+                <section id="saran-view" class="view-section">
+                    <div class="section-header">
+                        <h2>Saran Keuangan & Target Pengeluaran</h2>
+                        <p>Rekomendasi alokasi keuangan cerdas berdasarkan total saldo awal Anda.</p>
+                    </div>
+                    <div class="card">
+                        <div class="saran-hero">
+                            <div class="saran-info-box">
+                                <span>Total Saldo Acuan Saat Ini</span>
+                                <h3 id="saranTotalSaldo">Rp0</h3>
+                                <p class="text-muted">Simulasi saran otomatis untuk durasi alokasi 1 minggu dan 1 bulan.</p>
+                            </div>
+                        </div>
+                        <div class="table-responsive" style="margin-top: 20px;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Target Durasi</th>
+                                        <th>Alokasi Maksimal Total</th>
+                                        <th>Batas Pengeluaran per Hari</th>
+                                        <th>Rekomendasi / Saran Catatan</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>Target 5 Hari</strong></td>
+                                        <td id="saran5HariTotal">Rp0</td>
+                                        <td id="saran5HariHarian" class="text-success font-weight-bold">Rp0 / hari</td>
+                                        <td>Fokus untuk kebutuhan mendesak jangka sangat pendek.</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Target 1 Minggu (7 Hari)</strong></td>
+                                        <td id="saranMingguTotal">Rp0</td>
+                                        <td id="saranMingguHarian" class="text-success font-weight-bold">Rp0 / hari</td>
+                                        <td>Ideal untuk pengeluaran harian jangka pendek yang terkontrol.</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Target 2 Minggu (14 Hari)</strong></td>
+                                        <td id="saran2MingguTotal">Rp0</td>
+                                        <td id="saran2MingguHarian" class="text-primary font-weight-bold">Rp0 / hari</td>
+                                        <td>Cocok untuk alokasi pertengahan bulan atau mingguan ganda.</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Target 3 Minggu (21 Hari)</strong></td>
+                                        <td id="saran3MingguTotal">Rp0</td>
+                                        <td id="saran3MingguHarian" class="text-warning font-weight-bold">Rp0 / hari</td>
+                                        <td>Perencanaan alokasi hampir sebulan penuh.</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Target 1 Bulan (30 Hari)</strong></td>
+                                        <td id="saranBulanTotal">Rp0</td>
+                                        <td id="saranBulanHarian" class="text-primary font-weight-bold">Rp0 / hari</td>
+                                        <td>Alokasi seimbang untuk kebutuhan bulanan dan tabungan darurat.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 8. LAPORAN VIEW -->
                 <section id="laporan-view" class="view-section">
                     <div class="section-header">
                         <h2>Laporan Keuangan</h2>
@@ -408,13 +566,45 @@
                     </div>
                 </section>
 
-                <!-- 8. PENGATURAN VIEW -->
-                <section id="pengaturan-view" class="view-section">
+                <!-- 9. PROFIL & PENGATURAN VIEW -->
+                <section id="profil-view" class="view-section">
                     <div class="section-header">
-                        <h2>Pengaturan Aplikasi</h2>
-                        <p>Kelola preferensi dan data aplikasi DompetKu Anda.</p>
+                        <h2>Profil Pengguna & Pengaturan</h2>
+                        <p>Kelola informasi akun, keamanan, preferensi tema, dan data aplikasi.</p>
                     </div>
                     <div class="settings-grid">
+                        <div class="card profile-card-box">
+                            <div class="profile-header-flex">
+                                <div class="avatar-large" id="profileAvatarLarge"><i class="fa-solid fa-user"></i></div>
+                                <div>
+                                    <h3 id="profileUsernameDisplay">Username</h3>
+                                    <p class="text-muted" id="profileIdentifierDisplay">Email / No. Telp</p>
+                                </div>
+                            </div>
+                            <hr style="margin: 20px 0; border: none; border-top: 1px solid var(--border-color);">
+                            <h4>Ubah Kredensial / Password</h4>
+                            <form id="updateProfileForm" style="margin-top: 14px;">
+                                <div class="form-group">
+                                    <label>Username Baru</label>
+                                    <input type="text" id="updateUsername" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>No. Telepon / Gmail Baru</label>
+                                    <input type="text" id="updateIdentifier" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Password Baru (Opsional)</label>
+                                    <input type="password" id="updatePassword" placeholder="Kosongkan jika tidak diubah">
+                                </div>
+                                <button type="submit" class="btn-primary">Simpan Perubahan Profil</button>
+                            </form>
+                        </div>
+
+                        <div class="card">
+                            <h3>Bantuan & Pemulihan Akun</h3>
+                            <p class="setting-desc">Jika Anda lupa password, Gmail, atau nomor telepon, data akun saat ini tersimpan aman di browser Anda. Anda dapat melihat kembali informasi akun Anda di atas atau melakukan reset akun jika diperlukan.</p>
+                        </div>
+
                         <div class="card">
                             <h3>Tampilan Tema</h3>
                             <p class="setting-desc">Pilih mode tampilan yang nyaman untuk mata Anda.</p>
@@ -431,24 +621,40 @@
                             <h3>Manajemen Data</h3>
                             <p class="setting-desc">Hapus seluruh data transaksi dan saldo awal jika ingin memulai dari awal.</p>
                             <button class="btn-danger" id="resetDataBtn">
-                                <i class="fa-solid fa-trash-can"></i> Hapus Seluruh Data
+                                <i class="fa-solid fa-trash-can"></i> Hapus Seluruh Data Transaksi
                             </button>
-                        </div>
-
-                        <div class="card">
-                            <h3>Informasi Aplikasi</h3>
-                            <div class="app-info-list">
-                                <p><strong>Nama Aplikasi:</strong> DompetKu</p>
-                                <p><strong>Versi:</strong> 1.0.0 (Project Active)</p>
-                                <p><strong>Penyimpanan:</strong> LocalStorage Browser</p>
-                                <p class="text-muted">Catatan: Data tersimpan secara lokal di perangkat Anda. Untuk sinkronisasi antar perangkat secara online, diperlukan backend/database terpisah.</p>
-                            </div>
                         </div>
                     </div>
                 </section>
 
             </div>
         </main>
+    </div>
+
+    <!-- AI FINANCIAL ASSISTANT CHATBOT WIDGET -->
+    <div class="ai-widget-container">
+        <button class="ai-fab-btn" id="aiFabBtn" title="Tanya AI DompetKu">
+            <i class="fa-solid fa-robot"></i>
+            <span class="ai-fab-text">Asisten AI</span>
+        </button>
+        <div class="ai-chat-box hidden" id="aiChatBox">
+            <div class="ai-chat-header">
+                <div class="ai-header-title">
+                    <i class="fa-solid fa-robot"></i>
+                    <span>Asisten AI DompetKu</span>
+                </div>
+                <button class="ai-close-btn" id="aiCloseBtn">&times;</button>
+            </div>
+            <div class="ai-chat-body" id="aiChatBody">
+                <div class="ai-message bot">
+                    Halo! Saya asisten AI DompetKu. Ada yang bisa saya bantu seputar pencatatan keuangan, cara menggunakan aplikasi ini, atau tips mengatur saldo Anda?
+                </div>
+            </div>
+            <div class="ai-chat-footer">
+                <input type="text" id="aiInputText" placeholder="Ketik pertanyaan atau minta bantuan...">
+                <button id="aiSendBtn"><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
+        </div>
     </div>
 
     <!-- Edit Transaction Modal -->
@@ -499,5 +705,15 @@
 
     <!-- App Logic Script -->
     <script src="app.js"></script>
+    <!-- Service Worker Registration for PWA -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('ServiceWorker registered!', reg))
+                    .catch(err => console.log('ServiceWorker error:', err));
+            });
+        }
+    </script>
 </body>
 </html>

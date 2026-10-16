@@ -1,39 +1,30 @@
-# DompetKu — Aplikasi Pencatatan Keuangan Pribadi
+# DompetKu — Aplikasi Pencatatan Keuangan Pribadi (Siap PWA / Install di HP)
 
-DompetKu adalah aplikasi pencatatan keuangan pribadi berbasis web modern yang dirancang untuk membantu pengguna mengelola keuangan dengan mudah, terstruktur, dan ramah pemula.
+DompetKu kini telah dilengkapi dengan konfigurasi **Progressive Web App (PWA)** sehingga dapat diinstal langsung di layar utama perangkat Android maupun iPhone (iOS) tanpa memerlukan file APK pihak ketiga yang berisiko virus.
 
-## Fitur Utama
-1. **Dashboard Interaktif**: Ringkasan saldo, total pemasukan, total pengeluaran, saldo awal, grafik keuangan visual (Chart.js), dan daftar transaksi terbaru.
-2. **Saldo Awal**: Fitur khusus untuk menetapkan jumlah modal awal sebelum transaksi dicatat, tanpa menggandakan perhitungan saldo.
-3. **Pemasukan & Pengeluaran**: Form pencatatan lengkap dengan kategori terstruktur dan validasi input.
-4. **Riwayat Transaksi**: Daftar lengkap dengan fitur pencarian, filter jenis transaksi, pengurutan, edit, dan hapus transaksi.
-5. **Anggaran Bulanan**: Batas pengeluaran bulanan dengan progress bar interaktif dan peringatan visual otomatis saat mendekati atau melewati batas.
-6. **Laporan & Ekspor CSV**: Ringkasan laporan keuangan dan fitur ekspor data langsung ke file CSV (kompatibel dengan Microsoft Excel dan Google Sheets).
-7. **Mode Gelap & Terang (Dark / Light Mode)**: Pengaturan tema lengkap yang tersimpan di LocalStorage.
-8. **Penyimpanan Lokal**: Menggunakan browser LocalStorage agar data aman dan tetap tersimpan saat halaman dimuat ulang.
+## 🛡️ Jaminan Keamanan & Bebas Virus:
+* Aplikasi ini murni berjalan menggunakan standar web modern (**HTML5, CSS3, JavaScript murni**).
+* **Tanpa Malware / Tanpa Iklan / Tanpa Script Berbahaya:** Seluruh data keuangan dan akun Anda disimpan secara privat dan aman di dalam *LocalStorage* browser perangkat Anda sendiri.
 
 ---
 
-## Cara Membuka Project di Visual Studio Code Menggunakan Live Server
+## 📱 Panduan Instalasi di HP (Android & iPhone):
 
+### Cara Install di Android (Google Chrome):
+1. Buka link web DompetKu melalui browser **Chrome**.
+2. Ketuk ikon titik tiga (`⋮`) di pojok kanan atas browser.
+3. Pilih opsi **"Tambahkan ke Layar Utama"** (*Add to Home Screen*) atau **"Instal Aplikasi"**.
+4. Konfirmasi dengan menekan **Instal**. Ikon aplikasi DompetKu akan muncul di beranda HP Anda layaknya aplikasi dari Play Store.
+
+### Cara Install di iPhone / iPad (Safari):
+1. Buka link web DompetKu melalui browser **Safari**.
+2. Ketuk tombol **Bagikan** (*Share* - ikon kotak dengan panah ke atas di bagian bawah layar).
+3. Gulir ke bawah dan pilih opsi **"Tambah ke Layar Utama"** (*Add to Home Screen*).
+4. Ketuk **Tambah** (*Add*). Aplikasi siap digunakan langsung dari layar utama iPhone Anda!
+
+---
+
+## 🛠️ Cara Membuka Project di VS Code dengan Live Server
 1. Ekstrak file **Project Active.zip**.
-2. Buka aplikasi **Visual Studio Code (VS Code)**.
-3. Pilih menu **File > Open Folder...** lalu pilih folder hasil ekstraksi yang berisi file `index.html`, `style.css`, `app.js`, dan `README.md`.
-4. Pastikan Anda sudah menginstal ekstensi **Live Server** di VS Code (oleh Ritwick Dey).
-5. Klik kanan pada file `index.html` di panel Explorer sebelah kiri, lalu pilih **Open with Live Server**.
-6. Aplikasi DompetKu akan terbuka secara otomatis di browser default Anda.
-
----
-
-## Cara Mencoba Aplikasi di HP (Smartphone)
-
-* **Melalui Jaringan Lokal (Wi-Fi yang sama)**:
-  1. Jalankan Live Server di VS Code.
-  2. Perhatikan alamat IP lokal komputer Anda di terminal Live Server (misalnya `http://192.168.1.10:5500`).
-  3. Buka browser di HP Anda yang terhubung ke jaringan Wi-Fi yang sama, lalu ketik alamat IP tersebut.
-* **Melalui Hosting Gratis (Akses Publik)**:
-  * Anda dapat mengunggah folder project ini ke layanan hosting statis gratis seperti **Netlify Drop**, **GitHub Pages**, atau **Vercel** agar bisa diakses melalui tautan publik oleh siapa saja.
-
----
-
-*Dibuat khusus untuk pengelolaan keuangan pribadi yang lebih baik.*
+2. Buka **Visual Studio Code**, lalu pilih **File > Open Folder...** dan pilih folder `DompetKu`.
+3. Buka file `index.html`, klik kanan, lalu pilih **Open with Live Server**.
