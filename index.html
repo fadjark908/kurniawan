@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DompetKu — Aplikasi Pencatatan Keuangan Pribadi</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation (Desktop) -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-container">
+                    <div class="logo-icon">
+                        <i class="fa-solid fa-wallet"></i>
+                        <i class="fa-solid fa-coins coin-overlay"></i>
+                    </div>
+                    <h2>Dompet<span>Ku</span></h2>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li class="active" data-target="dashboard-view"><a href="#"><i class="fa-solid fa-house"></i><span>Dashboard</span></a></li>
+                    <li data-target="saldo-awal-view"><a href="#"><i class="fa-solid fa-vault"></i><span>Saldo Awal</span></a></li>
+                    <li data-target="pemasukan-view"><a href="#"><i class="fa-solid fa-circle-arrow-down"></i><span>Pemasukan</span></a></li>
+                    <li data-target="pengeluaran-view"><a href="#"><i class="fa-solid fa-circle-arrow-up"></i><span>Pengeluaran</span></a></li>
+                    <li data-target="riwayat-view"><a href="#"><i class="fa-solid fa-clock-rotate-left"></i><span>Riwayat</span></a></li>
+                    <li data-target="anggaran-view"><a href="#"><i class="fa-solid fa-bullseye"></i><span>Anggaran</span></a></li>
+                    <li data-target="laporan-view"><a href="#"><i class="fa-solid fa-chart-pie"></i><span>Laporan</span></a></li>
+                    <li data-target="pengaturan-view"><a href="#"><i class="fa-solid fa-gear"></i><span>Pengaturan</span></a></li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="theme-toggle-sidebar" id="themeToggleSidebar">
+                    <i class="fa-solid fa-moon"></i>
+                    <span>Mode Gelap</span>
+                    <label class="switch">
+                        <input type="checkbox" id="themeCheckbox">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Wrapper -->
+        <main class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div class="header-left">
+                    <button class="mobile-menu-btn" id="mobileMenuBtn">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <h1 id="pageTitle">Dashboard</h1>
+                </div>
+                <div class="header-right">
+                    <div class="user-greeting">
+                        <span id="greetingText">Halo, Pengguna</span>
+                        <div class="avatar"><i class="fa-solid fa-user"></i></div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Scrollable Content Area -->
+            <div class="content-body">
+                
+                <!-- 1. DASHBOARD VIEW -->
+                <section id="dashboard-view" class="view-section active">
+                    <!-- Welcome Banner -->
+                    <div class="welcome-banner">
+                        <div class="banner-text">
+                            <h2>Selamat Datang di DompetKu! 👋</h2>
+                            <p>Kelola keuangan pribadi dengan lebih mudah, terstruktur, dan transparan.</p>
+                        </div>
+                        <div class="banner-action">
+                            <button class="btn-primary" onclick="switchView('pemasukan-view')">
+                                <i class="fa-solid fa-plus"></i> Tambah Transaksi
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Financial Summary Cards -->
+                    <div class="stats-grid">
+                        <div class="stat-card saldo-card">
+                            <div class="stat-icon"><i class="fa-solid fa-wallet"></i></div>
+                            <div class="stat-info">
+                                <span class="stat-label">Total Saldo Saat Ini</span>
+                                <h3 id="dashTotalSaldo">Rp0</h3>
+                                <small>Saldo Awal: <span id="dashSaldoAwal">Rp0</span></small>
+                            </div>
+                        </div>
+                        <div class="stat-card income-card">
+                            <div class="stat-icon"><i class="fa-solid fa-arrow-down-long"></i></div>
+                            <div class="stat-info">
+                                <span class="stat-label">Total Pemasukan</span>
+                                <h3 id="dashTotalPemasukan">Rp0</h3>
+                                <small class="text-success"><i class="fa-solid fa-chart-line"></i> Masuk</small>
+                            </div>
+                        </div>
+                        <div class="stat-card expense-card">
+                            <div class="stat-icon"><i class="fa-solid fa-arrow-up-long"></i></div>
+                            <div class="stat-info">
+                                <span class="stat-label">Total Pengeluaran</span>
+                                <h3 id="dashTotalPengeluaran">Rp0</h3>
+                                <small class="text-danger"><i class="fa-solid fa-chart-line"></i> Keluar</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Action Buttons -->
+                    <div class="quick-actions">
+                        <button class="quick-btn" onclick="switchView('saldo-awal-view')">
+                            <i class="fa-solid fa-vault"></i> Atur Saldo Awal
+                        </button>
+                        <button class="quick-btn" onclick="switchView('pemasukan-view')">
+                            <i class="fa-solid fa-circle-arrow-down"></i> Catat Pemasukan
+                        </button>
+                        <button class="quick-btn" onclick="switchView('pengeluaran-view')">
+                            <i class="fa-solid fa-circle-arrow-up"></i> Catat Pengeluaran
+                        </button>
+                        <button class="quick-btn" onclick="switchView('anggaran-view')">
+                            <i class="fa-solid fa-bullseye"></i> Cek Anggaran
+                        </button>
+                    </div>
+
+                    <!-- Charts & Recent Transactions Grid -->
+                    <div class="dashboard-grid">
+                        <div class="card chart-container-card">
+                            <div class="card-header">
+                                <h3>Grafik Keuangan</h3>
+                                <span class="badge">Bulan Ini</span>
+                            </div>
+                            <div class="chart-wrapper">
+                                <canvas id="financeChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="card recent-tx-card">
+                            <div class="card-header">
+                                <h3>Transaksi Terbaru</h3>
+                                <button class="btn-text" onclick="switchView('riwayat-view')">Lihat Semua</button>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="data-table" id="dashRecentTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Tanggal</th>
+                                            <th>Kategori</th>
+                                            <th>Catatan</th>
+                                            <th>Nominal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="dashRecentBody">
+                                        <!-- Dynamically inserted -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div id="dashEmptyState" class="empty-state hidden">
+                                <i class="fa-solid fa-receipt"></i>
+                                <p>Belum ada transaksi tercatat.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 2. SALDO AWAL VIEW -->
+                <section id="saldo-awal-view" class="view-section">
+                    <div class="section-header">
+                        <h2>Pengaturan Saldo Awal</h2>
+                        <p>Masukkan jumlah uang yang sudah Anda miliki sebelum mulai mencatat transaksi di aplikasi ini.</p>
+                    </div>
+                    <div class="card form-card">
+                        <form id="saldoAwalForm">
+                            <div class="form-group">
+                                <label for="initialBalanceInput">Jumlah Saldo Awal (Rp)</label>
+                                <div class="input-prefix">
+                                    <span>Rp</span>
+                                    <input type="number" id="initialBalanceInput" min="0" placeholder="Contoh: 500000" required>
+                                </div>
+                                <small class="form-hint">Saldo awal tidak dihitung sebagai pemasukan, namun langsung ditambahkan ke total saldo Anda.</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="initialBalanceNote">Catatan / Keterangan (Opsional)</label>
+                                <input type="text" id="initialBalanceNote" placeholder="Contoh: Tabungan dompet & rekening bank">
+                            </div>
+                            <button type="submit" class="btn-primary btn-block">Simpan Saldo Awal</button>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- 3. PEMASUKAN VIEW -->
+                <section id="pemasukan-view" class="view-section">
+                    <div class="section-header">
+                        <h2>Catat Pemasukan</h2>
+                        <p>Tambah catatan uang masuk ke dalam dompet Anda.</p>
+                    </div>
+                    <div class="card form-card">
+                        <form id="pemasukanForm">
+                            <div class="form-group">
+                                <label for="pemasukanJumlah">Jumlah (Rp)</label>
+                                <div class="input-prefix">
+                                    <span>Rp</span>
+                                    <input type="number" id="pemasukanJumlah" min="1" placeholder="Contoh: 150000" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="pemasukanKategori">Kategori Pemasukan</label>
+                                <select id="pemasukanKategori" required>
+                                    <option value="" disabled selected>Pilih Kategori</option>
+                                    <option value="Uang Saku">Uang Saku</option>
+                                    <option value="Gaji">Gaji</option>
+                                    <option value="Bonus atau Hadiah">Bonus atau Hadiah</option>
+                                    <option value="Penjualan">Penjualan</option>
+                                    <option value="Transfer Masuk">Transfer Masuk</option>
+                                    <option value="Lainnya">Lainnya</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="pemasukanTanggal">Tanggal Transaksi</label>
+                                <input type="date" id="pemasukanTanggal" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="pemasukanCatatan">Catatan (Opsional)</label>
+                                <input type="text" id="pemasukanCatatan" placeholder="Keterangan tambahan...">
+                            </div>
+                            <button type="submit" class="btn-primary btn-block">Simpan Pemasukan</button>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- 4. PENGELUARAN VIEW -->
+                <section id="pengeluaran-view" class="view-section">
+                    <div class="section-header">
+                        <h2>Catat Pengeluaran</h2>
+                        <p>Catat setiap uang keluar agar pengeluaran tetap terkontrol.</p>
+                    </div>
+                    <div class="card form-card">
+                        <form id="pengeluaranForm">
+                            <div class="form-group">
+                                <label for="pengeluaranJumlah">Jumlah (Rp)</label>
+                                <div class="input-prefix">
+                                    <span>Rp</span>
+                                    <input type="number" id="pengeluaranJumlah" min="1" placeholder="Contoh: 25000" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="pengeluaranKategori">Kategori Pengeluaran</label>
+                                <select id="pengeluaranKategori" required>
+                                    <option value="" disabled selected>Pilih Kategori</option>
+                                    <option value="Makanan dan Minuman">Makanan dan Minuman</option>
+                                    <option value="Transportasi">Transportasi</option>
+                                    <option value="Kebutuhan Kuliah">Kebutuhan Kuliah</option>
+                                    <option value="Belanja">Belanja</option>
+                                    <option value="Tagihan">Tagihan</option>
+                                    <option value="Hiburan">Hiburan</option>
+                                    <option value="Kesehatan">Kesehatan</option>
+                                    <option value="Lainnya">Lainnya</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="pengeluaranTanggal">Tanggal Transaksi</label>
+                                <input type="date" id="pengeluaranTanggal" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="pengeluaranCatatan">Catatan (Opsional)</label>
+                                <input type="text" id="pengeluaranCatatan" placeholder="Keterangan tambahan...">
+                            </div>
+                            <button type="submit" class="btn-primary btn-block btn-danger-theme">Simpan Pengeluaran</button>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- 5. RIWAYAT VIEW -->
+                <section id="riwayat-view" class="view-section">
+                    <div class="section-header">
+                        <h2>Riwayat Transaksi</h2>
+                        <p>Daftar seluruh transaksi pemasukan dan pengeluaran.</p>
+                    </div>
+                    <div class="card">
+                        <!-- Filters & Search Toolbar -->
+                        <div class="toolbar">
+                            <div class="search-box">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                                <input type="text" id="searchTx" placeholder="Cari catatan atau kategori...">
+                            </div>
+                            <div class="filter-group">
+                                <select id="filterType">
+                                    <option value="all">Semua Jenis</option>
+                                    <option value="pemasukan">Pemasukan</option>
+                                    <option value="pengeluaran">Pengeluaran</option>
+                                </select>
+                                <select id="sortTx">
+                                    <option value="newest">Terbaru</option>
+                                    <option value="oldest">Terlama</option>
+                                    <option value="highest">Nominal Terbesar</option>
+                                    <option value="lowest">Nominal Terkecil</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Table -->
+                        <div class="table-responsive">
+                            <table class="data-table" id="riwayatTable">
+                                <thead>
+                                    <tr>
+                                        <th>Jenis</th>
+                                        <th>Tanggal</th>
+                                        <th>Kategori</th>
+                                        <th>Catatan</th>
+                                        <th>Nominal</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="riwayatBody">
+                                    <!-- Dynamic -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="riwayatEmpty" class="empty-state hidden">
+                            <i class="fa-solid fa-folder-open"></i>
+                            <p>Belum ada riwayat transaksi yang sesuai.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 6. ANGGARAN VIEW -->
+                <section id="anggaran-view" class="view-section">
+                    <div class="section-header">
+                        <h2>Anggaran Bulanan</h2>
+                        <p>Tetapkan batas pengeluaran bulanan Anda untuk mengontrol keuangan.</p>
+                    </div>
+                    <div class="card form-card">
+                        <div class="budget-setup">
+                            <div class="form-group">
+                                <label for="budgetLimitInput">Batas Pengeluaran Bulan Ini (Rp)</label>
+                                <div class="input-prefix">
+                                    <span>Rp</span>
+                                    <input type="number" id="budgetLimitInput" min="0" placeholder="Contoh: 1500000">
+                                </div>
+                            </div>
+                            <button type="button" class="btn-primary" id="saveBudgetBtn">Simpan Batas Anggaran</button>
+                        </div>
+
+                        <div class="budget-status-card" id="budgetStatusCard">
+                            <div class="budget-header-info">
+                                <div>
+                                    <span class="label">Bulan Berjalan: <strong id="currentMonthName">-</strong></span>
+                                    <h4>Total Pengeluaran: <span id="budgetSpent">Rp0</span></h4>
+                                </div>
+                                <div class="text-right">
+                                    <span class="label">Batas Anggaran</span>
+                                    <h4 id="budgetLimitDisplay">Rp0</h4>
+                                </div>
+                            </div>
+                            <div class="progress-container">
+                                <div class="progress-bar" id="budgetProgressBar" style="width: 0%;"></div>
+                            </div>
+                            <div class="budget-footer-info">
+                                <span>Sisa Anggaran: <strong id="budgetRemaining">Rp0</strong></span>
+                                <span id="budgetPercentage">0% terpakai</span>
+                            </div>
+                            <div id="budgetAlert" class="alert-box hidden">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                                <span id="budgetAlertText">Peringatan anggaran!</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 7. LAPORAN VIEW -->
+                <section id="laporan-view" class="view-section">
+                    <div class="section-header">
+                        <h2>Laporan Keuangan</h2>
+                        <p>Ringkasan komprehensif dan ekspor data keuangan Anda.</p>
+                    </div>
+                    <div class="card">
+                        <div class="report-summary-grid">
+                            <div class="report-item">
+                                <span>Saldo Awal</span>
+                                <h4 id="repSaldoAwal">Rp0</h4>
+                            </div>
+                            <div class="report-item">
+                                <span>Total Pemasukan</span>
+                                <h4 id="repPemasukan" class="text-success">Rp0</h4>
+                            </div>
+                            <div class="report-item">
+                                <span>Total Pengeluaran</span>
+                                <h4 id="repPengeluaran" class="text-danger">Rp0</h4>
+                            </div>
+                            <div class="report-item">
+                                <span>Saldo Akhir</span>
+                                <h4 id="repSaldoAkhir">Rp0</h4>
+                            </div>
+                        </div>
+
+                        <div class="report-actions">
+                            <button class="btn-primary" id="exportCsvBtn">
+                                <i class="fa-solid fa-file-csv"></i> Ekspor ke CSV (Excel / Sheets)
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 8. PENGATURAN VIEW -->
+                <section id="pengaturan-view" class="view-section">
+                    <div class="section-header">
+                        <h2>Pengaturan Aplikasi</h2>
+                        <p>Kelola preferensi dan data aplikasi DompetKu Anda.</p>
+                    </div>
+                    <div class="settings-grid">
+                        <div class="card">
+                            <h3>Tampilan Tema</h3>
+                            <p class="setting-desc">Pilih mode tampilan yang nyaman untuk mata Anda.</p>
+                            <div class="setting-option">
+                                <span>Mode Gelap / Terang</span>
+                                <label class="switch">
+                                    <input type="checkbox" id="settingsThemeCheckbox">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <h3>Manajemen Data</h3>
+                            <p class="setting-desc">Hapus seluruh data transaksi dan saldo awal jika ingin memulai dari awal.</p>
+                            <button class="btn-danger" id="resetDataBtn">
+                                <i class="fa-solid fa-trash-can"></i> Hapus Seluruh Data
+                            </button>
+                        </div>
+
+                        <div class="card">
+                            <h3>Informasi Aplikasi</h3>
+                            <div class="app-info-list">
+                                <p><strong>Nama Aplikasi:</strong> DompetKu</p>
+                                <p><strong>Versi:</strong> 1.0.0 (Project Active)</p>
+                                <p><strong>Penyimpanan:</strong> LocalStorage Browser</p>
+                                <p class="text-muted">Catatan: Data tersimpan secara lokal di perangkat Anda. Untuk sinkronisasi antar perangkat secara online, diperlukan backend/database terpisah.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Edit Transaction Modal -->
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit Transaksi</h3>
+                <button class="close-modal" id="closeModalBtn">&times;</button>
+            </div>
+            <form id="editForm">
+                <input type="hidden" id="editId">
+                <div class="form-group">
+                    <label for="editJenis">Jenis Transaksi</label>
+                    <select id="editJenis" required>
+                        <option value="pemasukan">Pemasukan</option>
+                        <option value="pengeluaran">Pengeluaran</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editJumlah">Jumlah (Rp)</label>
+                    <div class="input-prefix">
+                        <span>Rp</span>
+                        <input type="number" id="editJumlah" min="1" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="editKategori">Kategori</label>
+                    <input type="text" id="editKategori" required>
+                </div>
+                <div class="form-group">
+                    <label for="editTanggal">Tanggal</label>
+                    <input type="date" id="editTanggal" required>
+                </div>
+                <div class="form-group">
+                    <label for="editCatatan">Catatan</label>
+                    <input type="text" id="editCatatan">
+                </div>
+                <button type="submit" class="btn-primary btn-block">Simpan Perubahan</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toastNotification">
+        <i class="fa-solid fa-circle-check" id="toastIcon"></i>
+        <span id="toastMessage">Berhasil!</span>
+    </div>
+
+    <!-- App Logic Script -->
+    <script src="app.js"></script>
+</body>
+</html>
